@@ -1,3 +1,4 @@
+// .pegjs ファイルって分割できないのか…？
 UnitDefinitionFile = 
   unit_definitions : UnitDefinition +
   {
@@ -8,22 +9,22 @@ UnitDefinitionFile =
 UnitDefinition = 
   unit_attribute_parameter : UnitAttributeParameter
   _ "{"
-  unit_definition_parameter : UnitDefinitionParameter
+  unit_definition_parameters : UnitDefinitionParameters
   _ "}"
   {
     return {
       unit_attribute_parameter,
-      unit_definition_parameter,
+      unit_definition_parameters,
     }
   }
-UnitDefinitionParameter =
-  UnitDefinitionParameter_JobGroup /
-  UnitDefinitionParameter_Jobnet /
-  UnitDefinitionParameter_Job /
-  UnitDefinitionParameter_ManagerUnit /
-  UnitDefinitionParameter_StartCondition /
-  UnitDefinitionParameter_JobnetConnector
-UnitDefinitionParameter_JobGroup =
+UnitDefinitionParameters =
+  UnitDefinitionParameters_JobGroup /
+  UnitDefinitionParameters_Jobnet /
+  UnitDefinitionParameters_Job /
+  UnitDefinitionParameters_ManagerUnit /
+  UnitDefinitionParameters_StartCondition /
+  UnitDefinitionParameters_JobnetConnector
+UnitDefinitionParameters_JobGroup =
   attribute_devinition : AttributeDefinition
   unit_configuration_definition : UnitConfigurationDefinition
   job_group_definition : JobGroupDefinition
@@ -34,7 +35,7 @@ UnitDefinitionParameter_JobGroup =
       "job_group_definition": job_group_definition,
     }
   }
-UnitDefinitionParameter_Jobnet =
+UnitDefinitionParameters_Jobnet =
   AttributeDefinition
   UnitConfigurationDefinition
   JobnetDefinition
@@ -42,28 +43,28 @@ UnitDefinitionParameter_Jobnet =
     return {
     }
   }
-UnitDefinitionParameter_Job =
+UnitDefinitionParameters_Job =
   AttributeDefinition
   JobDefinition
   {
     return {
     }
   }
-UnitDefinitionParameter_ManagerUnit =
+UnitDefinitionParameters_ManagerUnit =
   AttributeDefinition
   ManagerUnitDefinition
   {
     return {
     }
   }
-UnitDefinitionParameter_StartCondition =
+UnitDefinitionParameters_StartCondition =
   AttributeDefinition
   StartConditionDefinition
   {
     return {
     }
   }
-UnitDefinitionParameter_JobnetConnector =
+UnitDefinitionParameters_JobnetConnector =
   AttributeDefinition
   JobnetConnectorDefinition
   {
@@ -71,17 +72,13 @@ UnitDefinitionParameter_JobnetConnector =
     }
   }
 AttributeDefinition =
-  ty : TY
-  cm : CM ?
-  {
-    return {
-      "unit_type": ty,
-      "comment": cm,
-    }
-  }
+  AttributeDefinitionParameter * 
+AttributeDefinitionParameter = 
+  TY / CM
 UnitConfigurationDefinition =
-  EL *
-  SZ ?
+  UnitConfigurationDefinitionParameter *
+UnitConfigurationDefinitionParameter =
+  EL / SZ
 LateralIconCountTimesLongitudinalIconCount =
   lateral_icon_count : [0-9][0-9]?[0-9]?
   "x"
@@ -211,12 +208,20 @@ __ = [ \t\r\n]+
 TY = 
   _ "ty=" unit_type : UnitType ";"
   {
-    return unit_type
+    return {
+      "parameter_code": "ty",
+      "parameter_name": "unit_type",
+      "value": unit_type,
+    }
   }
 CM = 
   _ "cm=" comment : Comment ";"
   {
-    return comment
+    return {
+      "parameter_code": "cm",
+      "parameter_name": "comment",
+      "value": comment,
+    }
   }
 EL = 
   _ "el=" 
@@ -229,7 +234,7 @@ EL =
   ";"
   {
     return {
-      "definition_type": "el",
+      "parameter_code": "el",
       "unit_name": unit_name,
       "unit_type": unit_type,
       "h": h,
